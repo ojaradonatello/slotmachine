@@ -2,21 +2,21 @@
 const promt = require("prompt-sync")();
 
 const ROWS =3;
-const COLs =3;
+const COLS =3;
 
 const SYMBOLS_COUNT = {
-A:2,
-B:4,
-C:6,
-D:8
+A: 2,
+B: 4,
+C: 6,
+D: 8,
 
 }
 
 const SYMBOLS_VALUES = {
-   A:5,
-   B:4,
-   C:3,
-   D:2
+   A: 5,
+   B: 4,
+   C: 3,
+   D: 2,
 }
 
 const deposit = () => {
@@ -66,29 +66,103 @@ const getBet = (balance, lines) => {
      }
 }
 
-const spin = ()=>{
+const spin = () => {
    const symbols = [];
    for( const [symbol,count ] of Object.entries(SYMBOLS_COUNT)){
       console.log(symbol, count)
       for (let i = 0; i < count; i++){
          symbols.push(symbol);
-         const selectedSymbols
+        
 
       }
 
    }
 
-  const reels = [[],[],[]];
-  for (let i = 0;i < COLS ; i++){
+  const reels = [];
+  for (let i = 0;i < COLS ; i++) {
+   reels.push([]);
    const reelSymbols = [...symbols];
-   for (let j = 0; j  < ROWS; j++)
-
+   for (let j = 0; j  < ROWS; j++){
+      const randomIndex = Math.floor(Math.random() * reelSymbols.length);
+      const selectedSymbols = reelSymbols[randomIndex];
+      reels[i].push(selectedSymbols);
+      reelSymbols.splice(randomIndex,1);
+   }
   }
+
+  return reels;
 };
 
+const transpose = (reels) => {
+   const rows = [];
+   for (let i = 0; i <ROWS; i++) {
+      rows.push([]);
+      for  (let j = 0; j <  COLS; j++) {
+         rows [i].push(reels[j][i])
+      }
+   }
+   return rows 
+};
 
-spin();
+const printROWS = (rows) => {
+   for (const row of rows ) {
+      let rowString = ""; 
+      for (const [i,symbol] of row.entries()){
+         rowString +=symbol
+         if (i != row.length - 1){
+            rowString += " | "
+         }
+      }
+      console.log(rowString)
+   }
+};
+
+const getWinnings = (rows,bet, lines) => {
+   let Winnings =0;
+
+   for (let row = 0; row < lines; row++){
+      const symbols = rows [row];
+      let allSame = true;
+      
+      for (const symbol of symbols) {
+         if (symbol != symbols[0]) {
+            allSame = false;
+
+         }
+      }
+
+
+      if (allSame){
+         Winnings += bet *  SYMBOLS_VALUES[symbols[0]]
+      }
+   }
+
+   return Winnings;
+}
+
+const game = () =>{
 let balance = deposit();
+while (true){
+
+console.log ("You have a balance of UGX" + balance);
 const numbersOfLines = getNumberOfLines();
 const bet = getBet(balance,numbersOfLines);
+balance -= bet * numbersOfLines;
+const reels = spin();
+const rows = transpose(reels);
+printROWS(rows);
+const Winnings = getWinnings(rows,bet, numbersOfLines)
+balance += Winnings;
+console.log("You won,UGX" + Winnings.toString());
+
+if (balance <= 0) {
+   console.log ("You run out of money!")
+   break;
+}
+
+const playAgain = promt(" Do you wantto play again (y/n) ?");
+if (playAgain != "y") break;
+}
+};
+game();
 
